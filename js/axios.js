@@ -1,3 +1,21 @@
+// Função para obter o token da URL
+function getToken() {
+  if (document.location.hash) {
+    let parsedHash = new URLSearchParams(window.location.hash);
+    if (parsedHash.get("access_token") || parsedHash.get("#access_token")) {
+      let access_token = parsedHash.get("access_token");
+      if (parsedHash.get("#access_token")) {
+        access_token = parsedHash.get("#access_token");
+      }
+      document.getElementById("accesstoken").innerHTML = access_token;
+    }
+    if (parsedHash.get("#id_token") || parsedHash.get("id_token")) {
+      document.getElementById("idtoken").innerHTML =
+        parsedHash.get("#id_token");
+    }
+  }
+}
+
 // Função para capturar os dados do formulário e cadastrar o produto
 function cadastrarProduto() {
   // Captura os dados do formulário
@@ -24,6 +42,7 @@ function cadastrarProduto() {
   const requestOptions = {
     method: "POST",
     headers: myHeaders,
+    Authorization: `Bearer ${token}`,
     body: JSON.stringify(produto),
     redirect: "follow",
     mode: "no-cors", // Usando no-cors
@@ -51,9 +70,18 @@ function cadastrarProduto() {
 }
 
 async function listarProdutos() {
+  const token = getToken(); // Obtém o token
+  const requestOptionsGet = {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`, // Coloca o token no cabeçalho de autorização
+    },
+  };
+
   try {
     const response = await fetch(
-      "https://p3ivgdl50h.execute-api.us-east-1.amazonaws.com/prod/produtos"
+      "https://p3ivgdl50h.execute-api.us-east-1.amazonaws.com/prod/produtos",
+      requestOptionsGet
     );
 
     const produtos = await response.json();
@@ -62,7 +90,7 @@ async function listarProdutos() {
     const tabelaProdutos = document.querySelector("#produtos-table tbody");
     tabelaProdutos.innerHTML = "";
 
-    produtos.forEach((produto) => {
+    produtos.forEach((produtos) => {
       const linha = document.createElement("tr");
       linha.innerHTML = `
           <td>${produto.id}</td>
